@@ -6,11 +6,11 @@ final class DayTemplate: AdventDay {
   }
 
   func part1() -> Any {
-    return 0
+    return ""
   }
 
   func part2() -> Any {
-    return 0
+    return ""
   }
 
 }
