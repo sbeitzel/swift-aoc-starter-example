@@ -1,8 +1,6 @@
 import Foundation
-import Parsing
 
-/// Not actually 2025 day 1, this is me noodling with 2024 day 4
-final class Day01: AdventDay {
+final class Day02: AdventDay {
 
   init(data: String) {
   }
