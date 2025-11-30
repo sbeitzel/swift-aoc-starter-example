@@ -17,6 +17,16 @@ final class Day06Tests {
     ......#...
     """
 
+  @Test func testMapParsing() async throws {
+    let challenge = Day06(data: testData)
+    #expect(challenge.guardPosition == (4, 6))
+    #expect(challenge.guardOrientation == .up)
+    #expect(challenge.map.count == 10)
+    for line in challenge.map {
+      #expect(line.count == 10)
+    }
+  }
+
   @Test func testPart1() async throws {
     let challenge = Day06(data: testData)
     #expect(String(describing: challenge.part1()) == "41")
