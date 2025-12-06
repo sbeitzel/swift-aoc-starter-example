@@ -20,8 +20,8 @@ final class Day05Tests {
 
   @Test func testParsing() async throws {
     let challenge = Day05(data: testData)
-    #expect(challenge.freshRanges.count == 4)
     #expect(challenge.ingredients.count == 6)
+    #expect(challenge.theRanges.count == 14)
   }
 
   @Test func testPart1() async throws {
