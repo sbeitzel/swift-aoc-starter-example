@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import AdventOfCode
@@ -48,4 +49,9 @@ final class Day11Tests {
     #expect(String(describing: challenge.part2()) == "2")
   }
 
+  @Test func testCreateSerializedGraphe() async throws {
+    let challenge = Day11(data: secondTestData)
+    let serialized = try JSONEncoder().encode(challenge.buildGraph())
+    print("Serialized graph: \n\n\(String(decoding: serialized, as: UTF8.self))")
+  }
 }

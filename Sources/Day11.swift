@@ -61,10 +61,10 @@ final class Day11: AdventDay {
     // svr -> dac -> fft -> out
     // so we compute all the allowable legs and we combine them
     var excludeNodes: Set<Int> = [svrIndex, outIndex]
-    let dac2fft = serverRack.countPaths(from: dacIndex, to: fftIndex, visited: &excludeNodes, reachability: fftReachability)
+    let dac2fft = serverRack.countPaths(fromIndex: dacIndex, toIndex: fftIndex, visited: &excludeNodes, reachability: fftReachability)
     print("Found \(dac2fft) paths from dac -> fft")
     excludeNodes = [svrIndex, outIndex]
-    let fft2dac = serverRack.countPaths(from: fftIndex, to: dacIndex, visited: &excludeNodes, reachability: dacReachability)
+    let fft2dac = serverRack.countPaths(fromIndex: fftIndex, toIndex: dacIndex, visited: &excludeNodes, reachability: dacReachability)
     print("Found \(fft2dac) paths from fft -> dac")
 
     // we've now computed the count of all the possible middle legs. So that means we have
@@ -74,10 +74,10 @@ final class Day11: AdventDay {
     if fft2dac > 0 {
       // we need to compute svr -> fft and dac2out
       excludeNodes = [svrIndex, fftIndex]
-      dac2out = serverRack.countPaths(from: dacIndex, to: outIndex, visited: &excludeNodes, reachability: outReachability)
+      dac2out = serverRack.countPaths(fromIndex: dacIndex, toIndex: outIndex, visited: &excludeNodes, reachability: outReachability)
       print("Found \(dac2out) paths from dac -> out")
       excludeNodes = [dacIndex, outIndex]
-      svr2fft = serverRack.countPaths(from: svrIndex, to: fftIndex, visited: &excludeNodes, reachability: fftReachability)
+      svr2fft = serverRack.countPaths(fromIndex: svrIndex, toIndex: fftIndex, visited: &excludeNodes, reachability: fftReachability)
       print("Found \(svr2fft) paths from svr -> fft")
     }
 
@@ -86,11 +86,11 @@ final class Day11: AdventDay {
     if dac2fft > 0 {
       // svr -> dac
       excludeNodes = [fftIndex, outIndex]
-      svr2dac = serverRack.countPaths(from: svrIndex, to: dacIndex, visited: &excludeNodes, reachability: dacReachability)
+      svr2dac = serverRack.countPaths(fromIndex: svrIndex, toIndex: dacIndex, visited: &excludeNodes, reachability: dacReachability)
       print("Found \(svr2dac) paths from svr -> dac")
       // fft -> out
       excludeNodes = [svrIndex, dacIndex]
-      fft2out = serverRack.countPaths(from: fftIndex, to: outIndex, visited: &excludeNodes, reachability: outReachability)
+      fft2out = serverRack.countPaths(fromIndex: fftIndex, toIndex: outIndex, visited: &excludeNodes, reachability: outReachability)
       print("Found \(fft2out) paths from fft -> out")
     }
     let sfdo = svr2fft * fft2dac * dac2out
@@ -117,10 +117,9 @@ extension Graph {
   /// - parameter toIndex: The index of the ending vertex.
   /// - returns: `true` if a path exists
   func pathExists(fromIndex: Int, toIndex: Int) -> Bool {
-      // pretty standard dfs that doesn't visit anywhere twice; pathDict tracks route
+      // pretty standard dfs that doesn't visit anywhere twice
       var visited: [Bool] = [Bool](repeating: false, count: vertexCount)
       var stack: [Int] = []
-      var pathDict: [Int: Edge] = [Int: Edge]()
       stack.append(fromIndex)
       while !stack.isEmpty {
         if let v: Int = stack.popLast() {
@@ -135,17 +134,63 @@ extension Graph {
           for e in edgesForIndex(v) {
             if !visited[e.v] {
               stack.append(e.v)
-              pathDict[e.v] = e
             }
           }
         }
       }
       return false // no solution found
   }
+
+  /// This is an exhaustive search to find out how many paths there are between two vertices.
+  ///
+  /// - parameter fromIndex: the index of the starting vertex
+  /// - parameter toIndex: the index of the destination vertex
+  /// - parameter visited: a set of vertex indices which will be considered to have been visited already
+  /// - returns: the number of paths that exist going from the start to the destinatin
+  func countPaths(fromIndex startIndex: Int, toIndex endIndex: Int, visited: inout Set<Int>) -> Int {
+    if startIndex == endIndex { return 1 }
+    visited.insert(startIndex)
+    var total = 0
+    for n in neighborIndicesForIndex(startIndex) where !visited.contains(n) {
+      total += countPaths(fromIndex: n, toIndex: endIndex, visited: &visited)
+    }
+    visited.remove(startIndex)
+    return total
+  }
+
+  /// This is an exhaustive search to find out how many paths there are between two vertices.
+  /// The search is optimized by not bothering to compute paths for known dead ends.
+  ///
+  /// - parameter fromIndex: the index of the starting vertex
+  /// - parameter toIndex: the index of the destination vertex
+  /// - parameter visited: a set of vertex indices which will be considered to have been visited already
+  /// - parameter reachability: a dictionary where the key is a vertex index and the value is whether or not a path exists from that vertex to the destination
+  /// - returns: the number of paths that exist going from the start to the destinatin
+  func countPaths(fromIndex startIndex: Int, toIndex endIndex: Int, visited: inout Set<Int>, reachability: [Int: Bool]) -> Int {
+    if startIndex == endIndex { return 1 }
+    guard reachability[startIndex] ?? false else { return 0 }
+    visited.insert(startIndex)
+    var total = 0
+    for n in neighborIndicesForIndex(startIndex) where !visited.contains(n) && (reachability[n] ?? false) {
+      total += countPaths(fromIndex: n, toIndex: endIndex, visited: &visited, reachability: reachability)
+    }
+    visited.remove(startIndex)
+    return total
+  }
+
+  /// Computes whether or not a given vertex (by index) is reachable from every other vertex in the graph.
+  func reachabilityOf(_ index: Int) -> [Int: Bool] {
+    var answers: [Int: Bool] = [:]
+    for vi in vertices.indices {
+      answers[vi] = pathExists(fromIndex: vi, toIndex: index)
+    }
+    return answers
+  }
+
 }
 
 extension Graph where V: Hashable {
-  /// A depth-first search to find *all* the paths between two verices in a graph.
+  /// A depth-first search to find *all* the paths between two vertices in a graph.
   func findPaths(from start: V, to end: V, visited: Set<V>) -> [[V]] {
     if start == end {
       return [[end]]
@@ -161,51 +206,19 @@ extension Graph where V: Hashable {
     return myPaths
   }
 
-  // because Graph stores the vertices in an Array, it is way faster to traffic in indices rather
-  // than in vertices.
-  func countPaths(from startIndex: Int, to endIndex: Int, visited: inout Set<Int>) -> Int {
-    if startIndex == endIndex { return 1 }
-    visited.insert(startIndex)
-    var total = 0
-    for n in neighborIndicesForIndex(startIndex) where !visited.contains(n) {
-      total += countPaths(from: n, to: endIndex, visited: &visited)
-    }
-    visited.remove(startIndex)
-    return total
-  }
-
   func countPaths(from start: V, to end: V, visited: inout Set<V>) -> Int {
     if start == end { return 1 }
     // convert all these vertices into indices and use the faster version
     guard let startIndex = indexOfVertex(start) else { return 0 }
     guard let endIndex = indexOfVertex(end) else { return 0 }
+    let endReachability = reachabilityOf(endIndex)
     var visitedIndices: Set<Int> = []
     for node in visited {
       if let nodeIndex = indexOfVertex(node) {
         visitedIndices.insert(nodeIndex)
       }
     }
-    return countPaths(from: startIndex, to: endIndex, visited: &visitedIndices)
+    return countPaths(fromIndex: startIndex, toIndex: endIndex, visited: &visitedIndices, reachability: endReachability)
   }
 
-  func countPaths(from startIndex: Int, to endIndex: Int, visited: inout Set<Int>, reachability: [Int: Bool]) -> Int {
-    if startIndex == endIndex { return 1 }
-    guard reachability[startIndex] ?? false else { return 0 }
-    visited.insert(startIndex)
-    var total = 0
-    for n in neighborIndicesForIndex(startIndex) where !visited.contains(n) && (reachability[n] ?? false) {
-      total += countPaths(from: n, to: endIndex, visited: &visited, reachability: reachability)
-    }
-    visited.remove(startIndex)
-    return total
-  }
-
-  /// Computes whether or not a given vertex (by index) is reachable from every other vertex in the graph.
-  func reachabilityOf(_ index: Int) -> [Int: Bool] {
-    var answers: [Int: Bool] = [:]
-    for vi in vertices.indices {
-      answers[vi] = pathExists(fromIndex: vi, toIndex: index)
-    }
-    return answers
-  }
 }
