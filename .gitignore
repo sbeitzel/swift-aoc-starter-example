@@ -10,3 +10,6 @@ DerivedData/
 lcov.info
 Package.resolved
 Sources/Data/Day*.txt
+
+# Other years' data archives
+*.tgz
