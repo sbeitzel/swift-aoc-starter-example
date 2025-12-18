@@ -24,6 +24,14 @@ final class Day07Tests {
     #expect(challenge.problems[7].1.count == 4)
   }
 
+  @Test func testOperatorGeneration() async throws {
+    let challenge = Day07(data: testData)
+    var sequences = challenge.generateOperatorSequences(ofLength: 2, using: [.times, .plus])
+    #expect(sequences.count == 4)
+    sequences = challenge.generateOperatorSequences(ofLength: 3, using: [.plus, .times])
+    #expect(sequences.count == 8)
+  }
+
   @Test func testPart1() async throws {
     let challenge = Day07(data: testData)
     #expect(String(describing: challenge.part1()) == "3749")
@@ -31,7 +39,7 @@ final class Day07Tests {
 
   @Test func testPart2() async throws {
     let challenge = Day07(data: testData)
-    #expect(String(describing: challenge.part2()) == "")
+    #expect(String(describing: challenge.part2()) == "11387")
   }
 
 }
