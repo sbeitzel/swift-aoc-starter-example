@@ -12,7 +12,7 @@ let dependencies: [Target.Dependency] = [
 
 let package = Package(
   name: "AdventOfCode",
-  platforms: [.macOS(.v13), .iOS(.v16), .watchOS(.v9), .tvOS(.v16)],
+  platforms: [.macOS(.v26), .iOS(.v26), .watchOS(.v26), .tvOS(.v26), .visionOS(.v26)],
   dependencies: [
     .package(
       url: "https://github.com/pointfreeco/swift-parsing.git",
