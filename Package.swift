@@ -5,6 +5,9 @@ let dependencies: [Target.Dependency] = [
   .product(name: "Algorithms", package: "swift-algorithms"),
   .product(name: "Collections", package: "swift-collections"),
   .product(name: "ArgumentParser", package: "swift-argument-parser"),
+  .product(name: "Parsing", package: "swift-parsing"),
+  .product(name: "QBStructures", package: "qbcps-structures"),
+  .product(name: "SwiftGraph", package: "SwiftGraph")
 ]
 
 let package = Package(
@@ -22,7 +25,15 @@ let package = Package(
       .upToNextMajor(from: "1.5.0")),
     .package(
       url: "https://github.com/swiftlang/swift-format.git",
-      .upToNextMajor(from: "600.0.0"))
+      .upToNextMajor(from: "600.0.0")),
+    .package(url: "https://github.com/sbeitzel/qbcps-structures.git",
+             .upToNextMajor(from: "0.9.0")),
+    .package(
+      url: "https://github.com/pointfreeco/swift-parsing.git",
+      .upToNextMajor(from: "0.14.1")),
+    .package(
+      url: "https://github.com/davecom/SwiftGraph.git",
+      .upToNextMajor(from: "3.1.0"))
   ],
   targets: [
     .executableTarget(
